@@ -1,2 +1,2 @@
 # DATASCI210_Capstone
-Repository for Ainsley, Ci, and Woojung
+Current folder includes codes worked by WooJung Kim
