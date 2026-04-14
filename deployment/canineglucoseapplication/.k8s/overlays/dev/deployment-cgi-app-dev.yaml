@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-cgi-dev
+spec:
+  template:
+    spec:
+      containers:
+      - name: cgi-api-container
+        env:
+        - name: TWILIO_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twilio-secrets
+              key: TWILIO_API_KEY
+        - name: TWILIO_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twilio-secrets
+              key: TWILIO_API_SECRET
+        - name: OWNER_PHONE
+          valueFrom:
+            secretKeyRef:
+              name: twilio-secrets
+              key: OWNER_PHONE
+        - name: CALLER_PHONE
+          valueFrom:
+            secretKeyRef:
+              name: twilio-secrets
+              key: CALLER_PHONE

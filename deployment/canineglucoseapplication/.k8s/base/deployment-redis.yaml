@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: cgi-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-server
+  template:
+    metadata:
+      labels:
+        app: redis-server
+    spec:
+      containers:
+        - name: redis
+          image: redis:8.6
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+          command: ["redis-server", "/usr/local/etc/redis/redis-full.conf"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+          - name: redis-config
+            mountPath: /usr/local/etc/redis
+            readOnly: true
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-configmap

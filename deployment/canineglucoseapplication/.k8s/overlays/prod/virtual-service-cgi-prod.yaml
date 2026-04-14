@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: external-access
+  namespace: cgi-prod
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - cgi-app-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /woof
+      route:
+        - destination:
+            host: cgi-service
+            port:
+              number: 8000

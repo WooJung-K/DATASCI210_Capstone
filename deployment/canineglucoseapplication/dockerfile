@@ -1,0 +1,52 @@
+##### Stage 1: The Build
+# Define Base Image
+FROM python:3.12.13-slim AS build
+
+# Setup Environment Variables
+ENV POETRY_VERSION=2.1.4
+ENV PATH=/root/.local/bin:$PATH
+
+# Install curl
+RUN apt-get update \
+    && apt-get install -y \
+         curl \
+         build-essential \
+         libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Get and install poetry package manager
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# Copy poetry package requirements from local into container
+ARG APP_DIR=/src
+WORKDIR ${APP_DIR}
+COPY pyproject.toml poetry.lock ./
+
+# Create virtual environment, install project packages into it
+RUN python -m venv --copies ${APP_DIR}/venv
+RUN . ${APP_DIR}/venv/bin/activate && poetry install --no-root --only main
+
+##### Stage 2: The Deployment #####
+# Use same base image as previous stage
+FROM python:3.12.13-slim AS run
+
+# Set Destination Folder in the Docker Image
+ARG APP_DIR=/src
+WORKDIR ${APP_DIR}
+
+# Install bash, because its too useful not to install
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+# Copy project code into container
+COPY --from=build ${APP_DIR}/venv ${APP_DIR}/venv
+ENV PATH=${APP_DIR}/venv/bin:$PATH
+COPY src ./src
+COPY model ./model
+
+# Open port so we can connect to container
+EXPOSE 8000
+
+# Run App on startup. Note we use uvicorn here, not poetry.
+ENTRYPOINT ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+

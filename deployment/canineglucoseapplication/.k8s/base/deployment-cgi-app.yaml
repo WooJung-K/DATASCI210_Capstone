@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cgi-deployment
+  namespace: cgi-local
+  labels:
+    app: cgi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cgi
+  template:
+    metadata:
+      labels:
+        app: cgi
+    spec:
+      containers:
+      - name: cgi-api-container
+        image: app:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: 200m
+            memory: 500Mi
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+        env:
+          - name: REDIS
+            value: redis-service
+          - name: REDIS_PORT
+            value: "6379"
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /woof/health
+              port: 8000
+            initialDelaySeconds: 1
+            periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /woof/health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        startupProbe:
+          httpGet:
+            scheme: HTTP
+            path: /woof/health
+            port: 8000
+          failureThreshold: 30
+          periodSeconds: 10
+      initContainers:
+        - name: init-verify-redis-service-dns
+          image: busybox:1.37
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -vz redis-service 6379; do echo 'waiting for redis service from DNS'; sleep 2; done",
+            ]
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+        - name: init-verify-redis-ready
+          image: busybox:1.37
+          imagePullPolicy: IfNotPresent
+          command:
+            [
+              "sh",
+              "-c",
+              "until (printf 'PING\r\n';) | nc redis-service 6379; do echo 'waiting for redis to PONG'; sleep 1; done",
+            ]
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi

@@ -1,0 +1,32 @@
+[project]
+name = "canineglucoseapplication"
+version = "0.1.0"
+description = "A prototype inference and data application to monitor glucose in diabetic dogs. Built for kubernetes."
+authors = [
+    {name = "Ainsley Bock",email = "abock@ischool.berkeley.edu"}
+]
+license = {text = "“This software is proprietary and may only be used, modified, and shared by members of UC Berkeley MIDS Spring Capstone 2026 Canine Glucose Monitoring group\""}
+readme = "README.md"
+requires-python = ">=3.12, <=3.13"
+dependencies = [
+    "fastapi[standard] (>=0.135.1,<0.136.0)",
+    "joblib (>=1.5.3,<2.0.0)",
+    "scikit-learn (==1.6.1)",
+    "ruff (>=0.15.6,<0.16.0)",
+    "redis (>=7.4.0,<8.0.0)",
+    "twilio (>=9.10.4,<10.0.0)",
+    "pandas (>=3.0.2,<4.0.0)",
+]
+
+[tool.poetry]
+name = "canineglucoseapplication"
+packages = [{ include = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+testcontainers = "^4.14.2"
+
